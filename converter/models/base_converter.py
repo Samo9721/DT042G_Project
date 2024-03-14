@@ -1,8 +1,19 @@
 from converter.exceptions.conversion_exceptions import InvalidUnitError, NonNumericValueError, NegativeValueError
-
+import sqlite3
 class BaseConverter:
-    def __init__(self, conversion_factors):
-        self.conversion_factors = conversion_factors
+    def __init__(self, db_path, category):
+        self.db_path = db_path
+        self.category = category
+        self.conversion_factors = self._fetch_conversion_factors()
+
+    def _fetch_conversion_factors(self):
+        # Fetch conversion factors from the database
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT UnitName, ToBaseFactor FROM Units WHERE Category = ?;
+            """, (self.category,))
+            return {unit_name: to_base_factor for unit_name, to_base_factor in cursor.fetchall()}
 
     def convert(self, from_unit, to_unit, value):
         self._validate_units(from_unit, to_unit)

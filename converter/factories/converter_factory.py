@@ -14,9 +14,12 @@ class ConverterFactory:
         'temperature': TemperatureConverter,
     }
 
-    @staticmethod
-    def get_converter(unit_type):
-        converter_class = ConverterFactory.converter_classes.get(unit_type)
+    def __init__(self, db_path):
+        self.db_path = db_path
+
+
+    def get_converter(self, unit_type):
+        converter_class = self.converter_classes.get(unit_type)
         if not converter_class:
             raise ValueError(f"No converter available for type '{unit_type}'.")
-        return converter_class()
+        return converter_class(self.db_path)
